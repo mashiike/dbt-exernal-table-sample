@@ -1,0 +1,13 @@
+external_table_sample:
+  outputs:
+    dev:
+      dbname: dev
+      user: "{{ env_var('REDSHIFT_USER','') }}"
+      password: "{{ env_var('REDSHIFT_PASSWORD','') }}"
+      host: "{{ env_var('REDSHIFT_HOST','') }}"
+      port: "{{ env_var('DBTREDSHIFT_PORT_THREADS','5439') | int }}"
+      schema: external_table_sample
+      ra3_node: true
+      threads: "{{ env_var('DBT_THREADS','8') | int }}"
+      type: redshift
+  target: dev

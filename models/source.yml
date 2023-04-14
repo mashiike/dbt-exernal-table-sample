@@ -1,0 +1,44 @@
+version: 2
+
+sources:
+  - name: src
+    schema: spectrum
+    loader: S3
+    loaded_at_field: collector_date
+
+    tables:
+      - name: metrics
+        external:
+          location: "s3://{{ env_var('S3_BUCKET') }}/dbt_external_tables/"
+          row_format: >
+            serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+            with serdeproperties (
+              'separatorChar' = ',',
+              'quoteChar' = '"',
+              'escapeChar' = '\\'
+            )
+            stored as textfile
+          table_properties: >
+            ('skip.header.line.count'='1','serialization.null.format'='')
+
+          partitions:
+            - name: collector_date
+              data_type: date
+              vals:
+                macro: dbt.dates_in_range
+                args:
+                  start_date_str: '2023-04-01'
+                  end_date_str: '{{modules.datetime.date.today().strftime("%Y-%m-%d")}}'
+                  in_fmt: "%Y-%m-%d"
+                  out_fmt: "%Y-%m-%d"
+              path_macro: dbt_external_tables.year_month_day
+        columns:
+          - name: app_id
+            data_type: varchar(255)
+            description: "Application ID"
+          - name: uu
+            data_type: int
+            description: "Unique User"
+          - name: ymd
+            data_type: date
+            description: "metrics date"
